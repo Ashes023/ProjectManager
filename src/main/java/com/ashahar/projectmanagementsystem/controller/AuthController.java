@@ -3,6 +3,7 @@ package com.ashahar.projectmanagementsystem.controller;
 import com.ashahar.projectmanagementsystem.config.JwtProvider;
 import com.ashahar.projectmanagementsystem.model.User;
 import com.ashahar.projectmanagementsystem.repo.UserRepo;
+import com.ashahar.projectmanagementsystem.request.LoginRequest;
 import com.ashahar.projectmanagementsystem.response.AuthResponse;
 import com.ashahar.projectmanagementsystem.service.CustomUserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -57,5 +59,34 @@ public class AuthController {
         response.setMessage("SignUp Success");
 
         return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/signin")
+    public ResponseEntity<AuthResponse> signin(@RequestBody LoginRequest loginRequest) throws Exception{
+
+        String username = loginRequest.getEmail();
+        String password = loginRequest.getPassword();
+
+        Authentication authentication = authenticate(username, password);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        String jwt = JwtProvider.generateToken(authentication);
+
+        AuthResponse response = new AuthResponse();
+        response.setJwt(jwt);
+        response.setMessage("SignIn Success");
+
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    }
+
+    private Authentication authenticate(String username, String password) {
+        UserDetails userDetails = customUserDetails.loadUserByUsername(username);
+        if(userDetails == null)
+            throw new SecurityException("Invalid credentials");
+
+        if(!passwordEncoder.matches(password, userDetails.getPassword()))
+            throw new SecurityException("Invalid credentials");
+
+        return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
 }
