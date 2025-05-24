@@ -6,6 +6,7 @@ import com.ashahar.projectmanagementsystem.repo.UserRepo;
 import com.ashahar.projectmanagementsystem.request.LoginRequest;
 import com.ashahar.projectmanagementsystem.response.AuthResponse;
 import com.ashahar.projectmanagementsystem.service.CustomUserDetailsImpl;
+import com.ashahar.projectmanagementsystem.service.SubscriptionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.http.HttpStatus;
@@ -35,6 +36,9 @@ public class AuthController {
     @Autowired
     private CustomUserDetailsImpl customUserDetails;
 
+    @Autowired
+    private SubscriptionService subscriptionService;
+
     @PostMapping("/signup")
     public ResponseEntity<AuthResponse> createUserHandler(@RequestBody User user) throws Exception{
         User isUserExist = userRepo.findByEmail(user.getEmail());
@@ -48,6 +52,8 @@ public class AuthController {
         createdUser.setUsername(user.getUsername());
 
         User savedUser = userRepo.save(createdUser);
+
+        subscriptionService.createSubscription(savedUser);
 
         Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword());
         SecurityContextHolder.getContext().setAuthentication(authentication);

@@ -12,6 +12,6 @@ public interface CommentService {
 
     void deleteComment(Long commentId, Long userId);
 
-    List<Comment> getAllCommentsByIssueId(Long issueId);
+    List<Comment> findCommentsByIssueId(Long issueId);
 
 }

@@ -71,7 +71,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public List<Comment> getAllCommentsByIssueId(Long issueId) {
+    public List<Comment> findCommentsByIssueId(Long issueId) {
         return commentRepo.findByIssueId(issueId);
     }
 }
