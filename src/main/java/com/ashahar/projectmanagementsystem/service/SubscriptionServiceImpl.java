@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Service
@@ -33,16 +34,40 @@ public class SubscriptionServiceImpl implements SubscriptionService{
 
     @Override
     public Subscription getUserSubscription(Long userId) {
-        return subscriptionRepo.findByUserId(userId);
+        Subscription subscription = subscriptionRepo.findByUserId(userId);
+        if(!isValid(subscription)) {
+            subscription.setPlantype(PlanType.FREE);
+            subscription.setSubscriptionStartDate(LocalDateTime.now());
+            subscription.setSubscriptionEndDate(LocalDateTime.now().plusMonths(12));
+        }
+        return subscriptionRepo.save(subscription);
     }
 
     @Override
     public Subscription updateSubscription(Long userId, PlanType planType) {
-        return null;
+        Subscription subscription = subscriptionRepo.findByUserId(userId);
+        subscription.setPlantype(planType);
+        subscription.setSubscriptionStartDate(LocalDateTime.now());
+        if (planType == PlanType.MONTHLY) {
+            subscription.setSubscriptionEndDate(LocalDateTime.now().plusMonths(1));
+        } else if (planType == PlanType.ANNUALLY) {
+            subscription.setSubscriptionEndDate(LocalDateTime.now().plusYears(1));
+        } else {
+            subscription.setSubscriptionEndDate(LocalDateTime.now().plusMonths(12)); // Default to 1 year
+        }
+
+        return subscriptionRepo.save(subscription);
     }
 
     @Override
     public boolean isValid(Subscription subscription) {
-        return false;
+        if(subscription.getPlantype() == PlanType.FREE) {
+            return true; // Free plan is always valid
+        }
+
+        LocalDateTime endDate = subscription.getSubscriptionEndDate();
+        LocalDateTime now = LocalDateTime.now();
+
+        return endDate.isAfter(now) || endDate.isEqual(now);
     }
 }
