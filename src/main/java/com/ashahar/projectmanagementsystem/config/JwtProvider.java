@@ -25,6 +25,8 @@ public class JwtProvider {
     }
 
     public static String getEmailFromToken(String jwt){
+        jwt = jwt.substring(7); // remove "Bearer " prefix
+
         Claims claims = Jwts.parser()
             .verifyWith(key)
             .build()

@@ -1,6 +1,7 @@
 package com.ashahar.projectmanagementsystem.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.boot.autoconfigure.web.WebProperties;
@@ -21,6 +22,8 @@ public class User {
 
     private String username;
     private String email;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     @JsonIgnore
